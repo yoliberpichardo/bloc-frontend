@@ -1,0 +1,79 @@
+/* Navbar.css */
+.navbar {
+  background-color: white;
+}
+
+.navbar-container {
+  max-width: 80rem; /* equivalent to max-w-7xl */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem; /* equivalent to px-4 */
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .navbar-container {
+    padding-left: 1.5rem; /* equivalent to sm:px-6 */
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .navbar-container {
+    padding-left: 2rem; /* equivalent to lg:px-8 */
+    padding-right: 2rem;
+  }
+}
+
+.navbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 4rem; /* equivalent to h-16 */
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-logo {
+  color: white;
+  font-weight: bold;
+  font-size: 1.25rem; /* equivalent to text-xl */
+  text-decoration: none;
+}
+
+.navbar-desktop-menu {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .navbar-desktop-menu {
+    display: block;
+  }
+}
+
+.navbar-links {
+  display: flex;
+  margin-left: 2.5rem; /* equivalent to ml-10 */
+  align-items: baseline;
+  gap: 1rem; /* equivalent to space-x-4 */
+}
+
+.navbar-link {
+  color: inherit;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.3s ease;
+}
+
+.navbar-link:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.navbar-link-active {
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.1);
+}

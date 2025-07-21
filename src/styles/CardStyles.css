@@ -1,0 +1,55 @@
+/* Card.css */
+.card-container {
+    /* Container styles if needed */
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.5rem; /* equivalent to gap-2 in Tailwind */
+    padding: 2rem; /* equivalent to p-8 in Tailwind */
+    height: 20rem; /* equivalent to h-80 in Tailwind */
+    width: 20rem; /* equivalent to w-80 in Tailwind */
+    border: 1px solid #e5e7eb; /* optional - added border for better visibility */
+    border-radius: 0.5rem; /* optional - rounded corners */
+    background-color: white; /* optional - background color */
+}
+
+.card-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-title {
+    font-size: 1.875rem; /* equivalent to text-3xl in Tailwind */
+    line-height: 2.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-description {
+    font-size: 1.5rem; /* equivalent to text-2xl in Tailwind */
+    line-height: 2rem;
+    color: #4b5563; /* optional - gray text color */
+}
+
+.card-actions {
+    display: flex;
+    flex-direction: row;
+    width: 10rem; /* equivalent to w-40 in Tailwind */
+    justify-content: space-between;
+}
+
+.card-button {
+    padding: 0.25rem 0.5rem;
+    background-color: #f3f4f6; /* light gray background */
+    border: 1px solid #d1d5db; /* gray border */
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.card-button:hover {
+    background-color: #e5e7eb; /* darker gray on hover */
+}

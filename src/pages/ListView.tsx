@@ -1,4 +1,4 @@
-import { CardList } from "./CardList";
+import { CardList } from "../components/CardList";
 import { Link } from "react-router-dom";
 import "../styles/ListViewStyles.css";
 

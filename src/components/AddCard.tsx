@@ -1,53 +1,42 @@
-import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { useCards } from '../contexts/useCards'
-import RichTextEditor from '../components/RichTextEditor'
-import '../styles/EditCardStyles.css'
-import type { Note } from '../types/noteTypes'
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useCards } from '../contexts/useCards';
+import RichTextEditor from '../components/RichTextEditor';
+import '../styles/EditCardStyles.css';
 
-const EditCard = () => {
-    const { id } = useParams<{ id: string }>()
-    const navigate = useNavigate()
-    const { cards, updateCard } = useCards()
-    const [card, setCard] = useState<Note>({
-        id: id || '',
+const AddCard = () => {
+    const navigate = useNavigate();
+    const { addCard } = useCards();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [card, setCard] = useState({
         title: '',
         description: ''
-    })
-    const [error, setError] = useState<string | null>(null)
-
-    useEffect(() => {
-        const foundCard = cards.find(c => c.id === id)
-        if (foundCard) {
-            setCard({
-                id: foundCard.id,
-                title: foundCard.title,
-                description: foundCard.description || ''
-            })
-        } else {
-            navigate('/not-found')
-        }
-    }, [id, cards, navigate])
+    });
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setError(null)
+        e.preventDefault();
+        setIsSubmitting(true);
+        setError(null);
 
         try {
-            await updateCard(card.id, {
+            await addCard({
                 title: card.title,
                 description: card.description
-            })
-            navigate('/')
+            });
+
+            navigate('/');
         } catch (err) {
-            console.error('Error updating note:', err)
-            setError('Failed to update note. Please try again.')
+            setError('Error al crear la nota. Por favor, inténtalo de nuevo.');
+            console.error(err);
+        } finally {
+            setIsSubmitting(false);
         }
-    }
+    };
 
     return (
         <div className="edit-card">
-            <h2 className="edit-card-title">Editar Nota</h2>
+            <h2 className="edit-card-title">Crear Nueva Nota</h2>
 
             {error && <div className="error-message">{error}</div>}
 
@@ -60,6 +49,7 @@ const EditCard = () => {
                         onChange={(e) => setCard({ ...card, title: e.target.value })}
                         className="form-input"
                         required
+                        placeholder="Ingresa un título"
                     />
                 </div>
 
@@ -68,12 +58,13 @@ const EditCard = () => {
                     <RichTextEditor
                         content={card.description}
                         onUpdate={(content) => setCard({ ...card, description: content })}
+                        placeholder="Escribe el contenido de tu nota aquí..."
                     />
                 </div>
 
                 <div className="form-actions">
-                    <button type="submit" className="primary-button">
-                        Guardar Cambios
+                    <button type="submit" className="primary-button" disabled={isSubmitting}>
+                        {isSubmitting ? 'Creando...' : 'Crear Nota'}
                     </button>
                     <button
                         type="button"
@@ -85,7 +76,7 @@ const EditCard = () => {
                 </div>
             </form>
         </div>
-    )
-}
+    );
+};
 
-export default EditCard
+export default AddCard;

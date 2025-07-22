@@ -6,7 +6,7 @@ import type {
   AuthResponse,
 } from "../types/userTypes";
 
-const API_URL = "http://localhost:3000/api/auth"; // Cambia a tu URL real
+const API_URL = "http://localhost:7089/api/auth";
 
 // Configura interceptores para manejar errores globalmente
 axios.interceptors.response.use(

@@ -109,6 +109,12 @@
   animation: spin 1s ease-in-out infinite;
   margin-right: 0.5rem;
 }
+.error {
+  color: #e53e3e;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
+}
 
 @keyframes spin {
   to {

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import "../styles/AuthForm.css";
 import { useAuth } from "../contexts";
+import "../styles/AuthForm.css";
 
 interface FormData {
     email: string;
@@ -92,7 +92,6 @@ const AuthForm = ({ initialMode = "login" }: { initialMode?: "login" | "register
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-        // Limpiar error al escribir
         if (errors[name as keyof FormErrors]) {
             setErrors(prev => ({ ...prev, [name]: undefined }));
         }
@@ -112,16 +111,27 @@ const AuthForm = ({ initialMode = "login" }: { initialMode?: "login" | "register
     return (
         <div className="auth-container">
             <div className="auth-card">
-                <h2>{isLoginMode ? "Iniciar Sesión" : "Registrarse"}</h2>
+                <div className="auth-header">
+                    <h2 className="auth-title">
+                        {isLoginMode ? "Iniciar Sesión" : "Crear Cuenta"}
+                    </h2>
+                    <p className="auth-subtitle">
+                        {isLoginMode ? "Accede a tu cuenta" : "Únete a nuestra comunidad"}
+                    </p>
+                </div>
 
-                <form onSubmit={handleSubmit}>
+                <form className="auth-form" onSubmit={handleSubmit}>
                     {!isLoginMode && (
                         <div className="form-group">
                             <input
                                 name="name"
+                                type="text"
+                                autoComplete="name"
+                                required={!isLoginMode}
+                                className="form-input"
+                                placeholder="Nombre completo"
                                 value={formData.name}
                                 onChange={handleInputChange}
-                                placeholder="Nombre completo"
                                 disabled={isLoading}
                             />
                             {errors.name && <span className="error">{errors.name}</span>}
@@ -132,9 +142,12 @@ const AuthForm = ({ initialMode = "login" }: { initialMode?: "login" | "register
                         <input
                             name="email"
                             type="email"
+                            autoComplete="email"
+                            required
+                            className="form-input"
+                            placeholder="Correo electrónico"
                             value={formData.email}
                             onChange={handleInputChange}
-                            placeholder="Email"
                             disabled={isLoading}
                         />
                         {errors.email && <span className="error">{errors.email}</span>}
@@ -144,9 +157,12 @@ const AuthForm = ({ initialMode = "login" }: { initialMode?: "login" | "register
                         <input
                             name="password"
                             type="password"
+                            autoComplete={isLoginMode ? "current-password" : "new-password"}
+                            required
+                            className="form-input"
+                            placeholder="Contraseña"
                             value={formData.password}
                             onChange={handleInputChange}
-                            placeholder="Contraseña"
                             disabled={isLoading}
                         />
                         {errors.password && <span className="error">{errors.password}</span>}
@@ -157,9 +173,12 @@ const AuthForm = ({ initialMode = "login" }: { initialMode?: "login" | "register
                             <input
                                 name="confirmPassword"
                                 type="password"
+                                autoComplete="new-password"
+                                required={!isLoginMode}
+                                className="form-input"
+                                placeholder="Confirmar contraseña"
                                 value={formData.confirmPassword}
                                 onChange={handleInputChange}
-                                placeholder="Confirmar contraseña"
                                 disabled={isLoading}
                             />
                             {errors.confirmPassword && (
@@ -168,16 +187,33 @@ const AuthForm = ({ initialMode = "login" }: { initialMode?: "login" | "register
                         </div>
                     )}
 
-                    <button type="submit" disabled={isLoading}>
-                        {isLoading ? "Procesando..." : isLoginMode ? "Iniciar Sesión" : "Registrarse"}
+                    <button
+                        type="submit"
+                        className="auth-button"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <>
+                                <span className="spinner" aria-hidden="true"></span>
+                                {isLoginMode ? "Iniciando sesión..." : "Creando cuenta..."}
+                            </>
+                        ) : (
+                            isLoginMode ? "Iniciar Sesión" : "Registrarse"
+                        )}
                     </button>
-                </form>
 
-                <button type="button" onClick={toggleMode} className="toggle-button">
-                    {isLoginMode
-                        ? "¿No tienes cuenta? Regístrate"
-                        : "¿Ya tienes cuenta? Inicia sesión"}
-                </button>
+                    <div className="auth-footer">
+                        <button
+                            type="button"
+                            onClick={toggleMode}
+                            className="auth-toggle"
+                        >
+                            {isLoginMode
+                                ? "¿No tienes cuenta? Regístrate aquí"
+                                : "¿Ya tienes cuenta? Inicia sesión aquí"}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );

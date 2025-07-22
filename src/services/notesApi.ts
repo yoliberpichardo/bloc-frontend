@@ -1,13 +1,9 @@
 import axios from "axios";
-import type { Note, CreateNoteDto } from "../types/noteTypes";
 
-const API_URL = "http://localhost:3000/api/notes";
+const API_URL = "http://localhost:7089/api/notes";
 
-const api = axios.create({
-  baseURL: API_URL,
-});
-
-api.interceptors.request.use((config) => {
+// Configura axios para incluir el token en todas las peticiones
+axios.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -15,33 +11,27 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
-    }
-    return Promise.reject(error);
-  }
-);
 export const notesApi = {
-  getAllNotes: async (): Promise<Note[]> => {
-    const response = await api.get<Note[]>("/");
+  getAllNotes: async () => {
+    const response = await axios.get(`${API_URL}/`);
     return response.data;
   },
 
-  createNote: async (noteData: CreateNoteDto): Promise<Note> => {
-    const response = await api.post<Note>("", noteData);
+  createNote: async (noteData: { title: string; description: string }) => {
+    const response = await axios.post(`${API_URL}/`, noteData);
     return response.data;
   },
 
-  updateNote: async (id: string, updates: Partial<Note>): Promise<Note> => {
-    const response = await api.put<Note>(`/${id}`, updates);
+  updateNote: async (
+    id: string,
+    noteData: { title: string; description: string }
+  ) => {
+    const response = await axios.put(`${API_URL}/${id}`, noteData);
     return response.data;
   },
 
-  deleteNote: async (id: string): Promise<void> => {
-    await api.delete(`/${id}`);
+  deleteNote: async (id: string) => {
+    const response = await axios.delete(`${API_URL}/${id}`);
+    return response.data;
   },
 };

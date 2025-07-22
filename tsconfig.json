@@ -3,5 +3,9 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ]
+  ],
+  "compilerOptions": {
+    "esModuleInterop": true, // Necesario para compatibilidad
+    "module": "ESNext" // o "CommonJS" según tu entorno
+  }
 }

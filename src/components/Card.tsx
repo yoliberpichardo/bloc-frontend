@@ -1,6 +1,5 @@
 import { useEffect, type FC } from 'react';
 import { Link } from 'react-router-dom';
-import sanitizeHtml from 'sanitize-html';
 import '../styles/CardStyles.css';
 import type { Note } from '../types/noteTypes';
 
@@ -11,25 +10,6 @@ interface CardProps {
 }
 
 const Card: FC<CardProps> = ({ note, onDelete, onUpdate }) => {
-    const cleanHtml = sanitizeHtml(note.description || '', {
-        allowedTags: ['p', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'img'],
-        allowedAttributes: {
-            'a': ['href', 'target', 'rel'],
-            'img': ['src', 'alt', 'width', 'height']
-        },
-        allowedSchemes: ['http', 'https', 'data'],
-        transformTags: {
-            'a': (tagName, attribs) => ({
-                tagName,
-                attribs: {
-                    ...attribs,
-                    target: '_blank',
-                    rel: 'noopener noreferrer'
-                }
-            })
-        }
-    });
-
     useEffect(() => {
         console.log(note.id, "sasdsad");
     }, [note.id])
@@ -41,7 +21,6 @@ const Card: FC<CardProps> = ({ note, onDelete, onUpdate }) => {
                     <h3 className="card-title">{note.title}</h3>
                     <div
                         className="card-description"
-                        dangerouslySetInnerHTML={{ __html: cleanHtml || 'Sin contenido' }}
                     />
                 </div>
                 <div className="card-actions">

@@ -1,79 +1,62 @@
-// components/EditCard.tsx
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import JoditEditor from 'jodit-react';
-import '../styles/EditCardStyles.css';
+import { useEffect, useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useCards } from '../contexts/useCards'
+import type { CardModel } from '../components/Card'
+import RichTextEditor from '../components/RichTextEditor'
+import '../styles/EditCardStyles.css'
 
-interface Card {
-    id: string;
-    title: string;
-    description: string;
-}
-
-interface EditCardProps {
-    onUpdateCard: (updatedCard: Card) => void;
-    cards: Card[];
-}
-
-const EditCard = ({cards, onUpdateCard }: EditCardProps) => {
-    const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
-    const [card, setCard] = useState<Card>({
+const EditCard = () => {
+    const { id } = useParams<{ id: string }>()
+    const navigate = useNavigate()
+    const { cards, setCards } = useCards()
+    const [card, setCard] = useState<CardModel>({
         id: id || '',
         title: '',
         description: ''
-    });
-
-    const config = {
-        readonly: false,
-        height: 400,
-        toolbarButtonSize: 'medium',
-        buttons: 'bold,italic,underline,strikethrough,ul,ol,link',
-    };
+    })
 
     useEffect(() => {
-
-        const foundCard = cards!.find(c => c.id === id);
+        const foundCard = cards.find(c => c.id === id)
         if (foundCard) {
-            setCard(foundCard);
+            setCard({
+                id: foundCard.id,
+                title: foundCard.title,
+                description: foundCard.description || ''
+            })
         } else {
-            navigate('/not-found');
+            navigate('/not-found')
         }
-    }, [id, navigate]);
+    }, [id, cards, navigate])
 
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onUpdateCard(card);
-        navigate('/');
-    };
-
-    const handleUpdate = (newContent: string) => {
-        setCard(prev => ({ ...prev, description: newContent }));
-    };
+        e.preventDefault()
+        setCards(prevCards =>
+            prevCards.map(c => c.id === card.id ? card : c)
+        )
+        navigate('/')
+    }
 
     return (
-        <div className="edit-card-container">
-            <h2>Editar Nota</h2>
+        <div className="edit-card">
+            <h2 className="edit-card-title">Editar Nota</h2>
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="edit-card-form">
                 <div className="form-group">
-                    <label>Título</label>
+                    <label className="form-label">Título</label>
                     <input
                         type="text"
                         value={card.title}
                         onChange={(e) => setCard({ ...card, title: e.target.value })}
+                        className="form-input"
                         required
-                        onBlur={() => handleUpdate(card.description)}
                     />
                 </div>
 
                 <div className="form-group">
-                    <label>Contenido</label>
-                    <JoditEditor
-                        value={card.description}
-                        config={config}
-                        onBlur={(newContent: string) => handleUpdate(newContent)}
-                        onChange={(newContent: string) => setCard({...card, description: newContent})}
+                    <label className="form-label">Contenido</label>
+                    <RichTextEditor
+                        content={card.description}
+                        onUpdate={(content) => setCard({ ...card, description: content })}
                     />
                 </div>
 
@@ -91,7 +74,7 @@ const EditCard = ({cards, onUpdateCard }: EditCardProps) => {
                 </div>
             </form>
         </div>
-    );
-};
+    )
+}
 
-export default EditCard;
+export default EditCard

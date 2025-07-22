@@ -77,3 +77,15 @@
   font-weight: bold;
   background-color: rgba(0, 0, 0, 0.1);
 }
+
+.navbar-button {
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+}
+
+.navbar-button:hover {
+  color: #4299e1;
+}

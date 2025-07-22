@@ -1,23 +1,12 @@
-// App.tsx
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
-import { ListView } from './components/ListView';
-import Navbar from './components/NavBar';
-import EditCard from './components/EditCard';
+import { AppRoutes } from "./components/AppRoutes"
+
 
 function App() {
     return (
-        <Router>
-            <Navbar />
-            <Routes>
-                <Route path="/" element={<ListView />} />
-                <Route 
-                    path="/edit/:id" 
-                    element={<EditCard />} 
-                />
-            </Routes>
-        </Router>
-    );
+        <div className="app">
+            <AppRoutes />
+        </div>
+    )
 }
 
-export default App;
+export default App

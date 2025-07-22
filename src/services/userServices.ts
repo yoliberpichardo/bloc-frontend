@@ -1,24 +1,51 @@
 import axios from "axios";
-import type { LoginData, RegisterData, User } from "../types/userTypes";
+import type {
+  LoginData,
+  RegisterData,
+  User,
+  AuthResponse,
+} from "../types/userTypes";
 
-const API_URL = "http://tu-api.com/api/auth"; // Reemplaza con tu URL
+const API_URL = "http://localhost:3000/api/auth"; // Cambia a tu URL real
+
+// Configura interceptores para manejar errores globalmente
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      return Promise.reject({
+        message: error.response.data.message || "Error en la solicitud",
+        status: error.response.status,
+      });
+    }
+    return Promise.reject({ message: "Error de conexión", status: 500 });
+  }
+);
 
 export const userApi = {
-  login: async (data: LoginData): Promise<User> => {
-    const response = await axios.post(`${API_URL}/login`, data);
+  login: async (data: LoginData): Promise<AuthResponse> => {
+    const response = await axios.post<AuthResponse>(`${API_URL}/login`, data);
+    localStorage.setItem("token", response.data.token);
     return response.data;
   },
 
-  register: async (data: RegisterData): Promise<User> => {
-    const response = await axios.post(`${API_URL}/register`, data);
+  register: async (data: RegisterData): Promise<AuthResponse> => {
+    const response = await axios.post<AuthResponse>(
+      `${API_URL}/register`,
+      data
+    );
+    localStorage.setItem("token", response.data.token);
     return response.data;
   },
 
-  // Opcional: Verificar token
   verifyToken: async (token: string): Promise<User> => {
-    const response = await axios.get(`${API_URL}/verify`, {
+    const response = await axios.get<{ user: User }>(`${API_URL}/verify`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return response.data;
+    return response.data.user;
+  },
+
+  logout: () => {
+    localStorage.removeItem("token");
   },
 };

@@ -1,9 +1,7 @@
 export interface User {
   id: string;
-  name: string;
   email: string;
-  token: string;
-  createdAt: string;
+  name: string;
 }
 
 export interface LoginData {
@@ -11,8 +9,11 @@ export interface LoginData {
   password: string;
 }
 
-export interface RegisterData {
+export interface RegisterData extends LoginData {
   name: string;
-  email: string;
-  password: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
 }

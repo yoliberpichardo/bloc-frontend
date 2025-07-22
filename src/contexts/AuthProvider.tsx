@@ -1,72 +1,85 @@
-import React, { useState, useEffect, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
-import type { LoginData, RegisterData, User } from '../types/userTypes';
-import { userApi } from '../services/userServices';
-import { AuthContext } from './authContext';
+import { useState, useEffect, type ReactNode, type JSX } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { AuthContext } from "./authContext";
+import type { LoginData, RegisterData, User } from "../types/userTypes";
+import { userApi } from "../services/userServices";
 
 interface AuthProviderProps {
     children: ReactNode;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const checkAuth = async () => {
+        const checkAuth = async (): Promise<void> => {
             try {
-                const token = localStorage.getItem('token');
+                const token: string | null = localStorage.getItem("token");
                 if (token) {
-                    // Lógica para verificar token
+                    const userData: User = await userApi.verifyToken(token);
+                    setUser(userData);
                 }
-            } catch {
-                localStorage.removeItem('token');
+            } catch (error: unknown) {
+                if (error instanceof Error) {
+                    console.error("Error verifying token:", error.message);
+                }
+                localStorage.removeItem("token");
             } finally {
                 setIsLoading(false);
             }
         };
-        checkAuth();
+
+        void checkAuth();
     }, []);
 
-    const login = async (data: LoginData) => {
+    const login = async (data: LoginData): Promise<void> => {
         setIsLoading(true);
         try {
-            const userData = await userApi.login(data);
-            setUser(userData);
-            localStorage.setItem('token', userData.token);
-            toast.success('¡Bienvenido!');
-            navigate('/');
-        } catch (error) {
-            toast.error('Credenciales incorrectas');
+            const response: { user: User; token: string } = await userApi.login(data);
+            setUser(response.user);
+            localStorage.setItem("token", response.token);
+            toast.success("¡Bienvenido!");
+            navigate("/");
+        } catch (error: unknown) {
+            let errorMessage = "Credenciales incorrectas";
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+            toast.error(errorMessage);
             throw error;
         } finally {
             setIsLoading(false);
         }
     };
 
-    const register = async (data: RegisterData) => {
+    const register = async (data: RegisterData): Promise<void> => {
         setIsLoading(true);
         try {
-            const userData = await userApi.register(data);
-            setUser(userData);
-            localStorage.setItem('token', userData.token);
-            toast.success('¡Registro exitoso!');
-            navigate('/');
-        } catch (error) {
-            toast.error('Error al registrarse');
+            const response: { user: User; token: string } = await userApi.register(data);
+            setUser(response.user);
+            localStorage.setItem("token", response.token);
+            toast.success("¡Registro exitoso!");
+            navigate("/");
+        } catch (error: unknown) {
+            let errorMessage = "Error al registrarse";
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+            toast.error(errorMessage);
             throw error;
         } finally {
             setIsLoading(false);
         }
     };
 
-    const logout = () => {
+    const logout = (): void => {
         setUser(null);
-        localStorage.removeItem('token');
-        toast.success('Sesión cerrada');
-        navigate('/login');
+        localStorage.removeItem("token");
+        toast.success("Sesión cerrada");
+        navigate("/login");
     };
 
     const value = {
@@ -75,7 +88,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isLoading,
         login,
         register,
-        logout
+        logout,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

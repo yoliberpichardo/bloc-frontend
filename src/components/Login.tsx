@@ -1,202 +1,183 @@
-import React, { useState, useEffect, type FC } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
-import { userApi } from '../services/userServices';
-import type { RegisterData } from '../types/userTypes';
-import { useAuth } from '../contexts/useAuth';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import "../styles/AuthForm.css";
+import { useAuth } from "../contexts";
 
-interface AuthFormProps {
-    initialMode?: 'login' | 'register';
+interface FormData {
+    email: string;
+    password: string;
+    name: string;
+    confirmPassword: string;
 }
 
-const AuthForm: FC<AuthFormProps> = ({ initialMode = 'login' }) => {
-    const [isLoginMode, setIsLoginMode] = useState(initialMode === 'login');
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-        name: '',
-        confirmPassword: ''
+interface FormErrors {
+    email?: string;
+    password?: string;
+    name?: string;
+    confirmPassword?: string;
+}
+
+const AuthForm = ({ initialMode = "login" }: { initialMode?: "login" | "register" }) => {
+    const [isLoginMode, setIsLoginMode] = useState(initialMode === "login");
+    const [formData, setFormData] = useState<FormData>({
+        email: "",
+        password: "",
+        name: "",
+        confirmPassword: ""
     });
+    const [errors, setErrors] = useState<FormErrors>({});
     const navigate = useNavigate();
-    const { login, isAuthenticated } = useAuth();
-    const [isLoading, setIsLoading] = useState(false);
+    const { isAuthenticated, login, register, isLoading } = useAuth();
 
     useEffect(() => {
         if (isAuthenticated) {
-            navigate('/');
+            navigate("/");
         }
     }, [isAuthenticated, navigate]);
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
+    const validateForm = (): boolean => {
+        const newErrors: FormErrors = {};
 
-        try {
-            await login({ email: formData.email, password: formData.password });
-            toast.success('¡Inicio de sesión exitoso!');
-            navigate('/');
-        } catch (error: unknown) {
-            const err = error as { response?: { data?: { message?: string } } };
-            const errorMessage = err.response?.data?.message || 'Error al iniciar sesión';
-            toast.error(errorMessage);
-        } finally {
-            setIsLoading(false);
+        if (!formData.email) {
+            newErrors.email = "Email es requerido";
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = "Email no válido";
         }
+
+        if (!formData.password) {
+            newErrors.password = "Contraseña es requerida";
+        } else if (formData.password.length < 6) {
+            newErrors.password = "Mínimo 6 caracteres";
+        }
+
+        if (!isLoginMode) {
+            if (!formData.name) {
+                newErrors.name = "Nombre es requerido";
+            }
+            if (formData.password !== formData.confirmPassword) {
+                newErrors.confirmPassword = "Las contraseñas no coinciden";
+            }
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
-    const handleRegister = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (formData.password !== formData.confirmPassword) {
-            toast.error('Las contraseñas no coinciden');
-            return;
-        }
-
-        if (formData.password.length < 6) {
-            toast.error('La contraseña debe tener al menos 6 caracteres');
-            return;
-        }
-
-        setIsLoading(true);
+        if (!validateForm()) return;
 
         try {
-            const userData: RegisterData = {
-                name: formData.name,
-                email: formData.email,
-                password: formData.password
-            };
-
-            await userApi.register(userData);
-            toast.success('¡Registro exitoso! Iniciando sesión...');
-            await login({ email: formData.email, password: formData.password });
-            navigate('/');
-        } catch (error: unknown) {
-            const err = error as { response?: { data?: { message?: string } } };
-            const errorMessage = err.response?.data?.message || 'Error al registrarse';
+            if (isLoginMode) {
+                await login({ email: formData.email, password: formData.password });
+                toast.success("Bienvenido de vuelta!");
+            } else {
+                await register({
+                    name: formData.name,
+                    email: formData.email,
+                    password: formData.password
+                });
+                toast.success("Cuenta creada con éxito!");
+            }
+        } catch (error) {
+            let errorMessage = "Error al autenticar";
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            }
             toast.error(errorMessage);
-        } finally {
-            setIsLoading(false);
         }
     };
-
-    const handleSubmit = isLoginMode ? handleLogin : handleRegister;
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        // Limpiar error al escribir
+        if (errors[name as keyof FormErrors]) {
+            setErrors(prev => ({ ...prev, [name]: undefined }));
+        }
     };
 
     const toggleMode = () => {
         setIsLoginMode(!isLoginMode);
         setFormData({
-            email: '',
-            password: '',
-            name: '',
-            confirmPassword: ''
+            email: "",
+            password: "",
+            name: "",
+            confirmPassword: ""
         });
+        setErrors({});
     };
 
     return (
         <div className="auth-container">
             <div className="auth-card">
-                <div className="auth-header">
-                    <h2 className="auth-title">
-                        {isLoginMode ? 'Iniciar Sesión' : 'Crear Cuenta'}
-                    </h2>
-                    <p className="auth-subtitle">
-                        {isLoginMode ? 'Accede a tu cuenta' : 'Únete a nuestra comunidad'}
-                    </p>
-                </div>
+                <h2>{isLoginMode ? "Iniciar Sesión" : "Registrarse"}</h2>
 
-                <form className="auth-form" onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit}>
                     {!isLoginMode && (
                         <div className="form-group">
                             <input
-                                id="name"
                                 name="name"
-                                type="text"
-                                autoComplete="name"
-                                required={!isLoginMode}
-                                className="form-input"
-                                placeholder="Nombre completo"
                                 value={formData.name}
                                 onChange={handleInputChange}
+                                placeholder="Nombre completo"
+                                disabled={isLoading}
                             />
+                            {errors.name && <span className="error">{errors.name}</span>}
                         </div>
                     )}
 
                     <div className="form-group">
                         <input
-                            id="email"
                             name="email"
                             type="email"
-                            autoComplete="email"
-                            required
-                            className="form-input"
-                            placeholder="Correo electrónico"
                             value={formData.email}
                             onChange={handleInputChange}
+                            placeholder="Email"
+                            disabled={isLoading}
                         />
+                        {errors.email && <span className="error">{errors.email}</span>}
                     </div>
 
                     <div className="form-group">
                         <input
-                            id="password"
                             name="password"
                             type="password"
-                            autoComplete={isLoginMode ? "current-password" : "new-password"}
-                            required
-                            className="form-input"
-                            placeholder="Contraseña"
                             value={formData.password}
                             onChange={handleInputChange}
+                            placeholder="Contraseña"
+                            disabled={isLoading}
                         />
+                        {errors.password && <span className="error">{errors.password}</span>}
                     </div>
 
                     {!isLoginMode && (
                         <div className="form-group">
                             <input
-                                id="confirmPassword"
                                 name="confirmPassword"
                                 type="password"
-                                autoComplete="new-password"
-                                required={!isLoginMode}
-                                className="form-input"
-                                placeholder="Confirmar contraseña"
                                 value={formData.confirmPassword}
                                 onChange={handleInputChange}
+                                placeholder="Confirmar contraseña"
+                                disabled={isLoading}
                             />
+                            {errors.confirmPassword && (
+                                <span className="error">{errors.confirmPassword}</span>
+                            )}
                         </div>
                     )}
 
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="auth-button"
-                    >
-                        {isLoading ? (
-                            <>
-                                <span className="spinner" aria-hidden="true"></span>
-                                {isLoginMode ? 'Iniciando sesión...' : 'Creando cuenta...'}
-                            </>
-                        ) : (
-                            isLoginMode ? 'Iniciar Sesión' : 'Crear Cuenta'
-                        )}
+                    <button type="submit" disabled={isLoading}>
+                        {isLoading ? "Procesando..." : isLoginMode ? "Iniciar Sesión" : "Registrarse"}
                     </button>
-
-                    <div className="auth-footer">
-                        <button
-                            type="button"
-                            onClick={toggleMode}
-                            className="auth-toggle"
-                        >
-                            {isLoginMode
-                                ? '¿No tienes cuenta? Regístrate aquí'
-                                : '¿Ya tienes cuenta? Inicia sesión aquí'
-                            }
-                        </button>
-                    </div>
                 </form>
+
+                <button type="button" onClick={toggleMode} className="toggle-button">
+                    {isLoginMode
+                        ? "¿No tienes cuenta? Regístrate"
+                        : "¿Ya tienes cuenta? Inicia sesión"}
+                </button>
             </div>
         </div>
     );
